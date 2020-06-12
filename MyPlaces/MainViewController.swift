@@ -10,16 +10,11 @@ import UIKit
 
 class MainViewController: UITableViewController {
     
-    private var myFavouriteRestaurants = ["Длинный нос", "Чайхана", "Hound", "Sheamus", "Diesel Room"]
-
+    let places: [Place] = Place.getPlaces()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
     }
 
     // MARK: - Table view data source
@@ -31,28 +26,29 @@ class MainViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return myFavouriteRestaurants.count
+        return places.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! CustomTableViewCell
         
         // Configure the cell...
-        cell.nameLabel?.text = myFavouriteRestaurants[indexPath.row]
-        cell.imageOfPlace?.image = UIImage(named: myFavouriteRestaurants[indexPath.row])
+        cell.nameLabel?.text = places[indexPath.row].name
+        cell.LocationLabel.text = places[indexPath.row].location
+        cell.typeLabel.text = places[indexPath.row].type
+        cell.imageOfPlace?.image = UIImage(named: places[indexPath.row].image)
         cell.imageOfPlace?.layer.cornerRadius = cell.imageOfPlace.frame.size.height / 2
         cell.imageOfPlace?.clipsToBounds = true
         
         return cell
     }
 
-    
-    // MARK: - Table view  delegate
+    // MARK: - Table view delegate
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 85
     }
-
+    
     /*
     // MARK: - Navigation
 
