@@ -24,4 +24,5 @@ class StorageManager {
             realm.delete(place)
         }
     }
+    
 }

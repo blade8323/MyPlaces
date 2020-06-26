@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import Cosmos
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -28,21 +29,25 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet var segmentedControl: UISegmentedControl!
     
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         places = realm.objects(Place.self)
         
+        //Убираем разделитель ячеек
+        tableView.tableFooterView = UIView()
+        //кто получатель информации об изменеии текста в строке
         searchController.searchResultsUpdater = self
+        //Не затемнять основную таблицу во время поиска для взаимодействия с результатами поиска
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search"
         navigationItem.searchController = searchController
+        //отпускаем строку поиска при переходе на другой экран
         definesPresentationContext = true
-        searchController.isActive = false
+//        //searchController.isActive = false
         
     }
-
+    
     // MARK: - Table view data source
 
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -55,7 +60,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         if isFiltering {
             return filteredPlaces.count
         } else {
-            return places.isEmpty ? 0 : places.count
+            return places.count
         }
     }
 
@@ -63,19 +68,14 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! CustomTableViewCell
 
         // Configure the cell...
-        let place: Place
-        if isFiltering {
-            place = filteredPlaces[indexPath.row]
-        } else {
-            place = places[indexPath.row]
-        }
+        let place = isFiltering ? filteredPlaces[indexPath.row] : places[indexPath.row]
+        
         cell.nameLabel?.text = place.name
         cell.LocationLabel.text = place.location
         cell.typeLabel.text = place.type
         cell.imageOfPlace.image = UIImage(data: place.imageData!)
-        
-        cell.imageOfPlace?.layer.cornerRadius = cell.imageOfPlace.frame.size.height / 2
-        cell.imageOfPlace?.clipsToBounds = true
+                
+        cell.cosmosRaiting.rating = place.raiting
 
         return cell
     }
@@ -86,9 +86,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         return 85
     }
     
+    
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let place = places[indexPath.row]
+        let place = isFiltering ? filteredPlaces[indexPath.row] : places[indexPath.row]
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { (_, _, _) in
             StorageManager.deleteObject(place)
             tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -98,19 +99,28 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         return actions
     }
     
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView == tableView {
+            navigationItem.searchController?.searchBar.isHidden = false
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        if !isFiltering {
+            navigationItem.searchController?.searchBar.isHidden = true
+        }
+    }
+    
     // MARK: - Navigation
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             guard let indexPath = tableView.indexPathForSelectedRow else { return }
-            let place: Place
-            if isFiltering {
-                place = filteredPlaces[indexPath.row]
-            } else {
-                place = places[indexPath.row]
-            }
+            let place = isFiltering ? filteredPlaces[indexPath.row] : places[indexPath.row]
+            
             let newPlaceVC = segue.destination as! NewPlaceViewController
-            newPlaceVC.currenPlace = place
+            newPlaceVC.currentPlace = place
         }
         
     }
