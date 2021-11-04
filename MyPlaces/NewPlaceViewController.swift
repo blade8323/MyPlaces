@@ -10,17 +10,22 @@ import PhotosUI
 
 class NewPlaceViewController: UITableViewController {
 
-    @IBOutlet weak var imageOfPlace: UIImageView!
+    @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet weak var placeImage: UIImageView!
+    @IBOutlet weak var placeNameTextField: UITextField!
+    @IBOutlet weak var placeLocationTextField: UITextField!
+    @IBOutlet weak var placeTypeTextField: UITextField!
+    
+    var newPlace: Place?
+    var imageIsChanged = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.tableFooterView = UIView()
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+        saveButton.isEnabled = false
+        placeNameTextField.addTarget(self, action: #selector(textFieldChanged), for: .editingChanged)
     }
 
     
@@ -55,6 +60,20 @@ class NewPlaceViewController: UITableViewController {
         }
     }
     
+    func saveNewPlace() {
+        var image: UIImage?
+        if imageIsChanged == true {
+            image = placeImage.image
+        } else {
+            image = UIImage(named: "imagePlaceholder")
+        }
+        newPlace = Place(name: placeNameTextField.text!, location: placeLocationTextField.text, type: placeTypeTextField.text, image: image, restaurantImage: nil)
+    }
+    
+    @IBAction func cancelAction(_ sender: UIBarButtonItem) {
+        dismiss(animated: true, completion: nil)
+    }
+    
 }
 
 extension NewPlaceViewController: UITextFieldDelegate {
@@ -64,6 +83,15 @@ extension NewPlaceViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
+    
+    @objc private func textFieldChanged() {
+        if placeNameTextField.text?.isEmpty == false{
+            saveButton.isEnabled = true
+        } else {
+            saveButton.isEnabled = false
+        }
+    }
+    
 }
 
 // MARK : - Work with Image
@@ -79,9 +107,10 @@ extension NewPlaceViewController: UIImagePickerControllerDelegate,  UINavigation
     }
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        imageOfPlace.image = info[.editedImage] as? UIImage
-        imageOfPlace.contentMode = .scaleAspectFill
-        imageOfPlace.clipsToBounds = true
+        imageIsChanged = true
+        placeImage.image = info[.editedImage] as? UIImage
+        placeImage.contentMode = .scaleAspectFill
+        placeImage.clipsToBounds = true
         dismiss(animated: true, completion: nil)
     }
 }

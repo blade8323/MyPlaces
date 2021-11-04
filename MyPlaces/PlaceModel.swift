@@ -6,19 +6,22 @@
 //
 
 import Foundation
+import UIKit
 
 protocol PlaceProtocol {
     var name: String {get set}
-    var location: String {get set}
-    var type: String {get set}
-    var image: String {get set}
+    var location: String? {get set}
+    var type: String? {get set}
+    var image: UIImage? {get set}
+    var restaurantImage: String? {get set}
 }
 
 struct Place: PlaceProtocol {
     var name: String
-    var location: String
-    var type: String
-    var image: String
+    var location: String?
+    var type: String?
+    var image: UIImage?
+    var restaurantImage: String?
     
     static let restaurantNames = [
         "Burger Heroes", "Kitchen", "Bonsai", "Дастархан",
@@ -30,7 +33,7 @@ struct Place: PlaceProtocol {
     static func getPlaces() -> [PlaceProtocol] {
         var places = [PlaceProtocol]()
         for place in restaurantNames {
-            places.append(Place(name: place, location: "Уфа", type: "Ресторан", image: place))
+            places.append(Place(name: place, location: "Уфа", type: "Ресторан", image: nil, restaurantImage: place))
         }
         
         return places
