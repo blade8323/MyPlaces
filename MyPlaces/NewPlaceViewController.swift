@@ -16,6 +16,7 @@ class NewPlaceViewController: UITableViewController {
     @IBOutlet weak var placeLocationTextField: UITextField!
     @IBOutlet weak var placeTypeTextField: UITextField!
     
+    var currentPlace: Place?
     var imageIsChanged = false
     
     override func viewDidLoad() {
@@ -24,8 +25,30 @@ class NewPlaceViewController: UITableViewController {
         tableView.tableFooterView = UIView()
         saveButton.isEnabled = false
         placeNameTextField.addTarget(self, action: #selector(textFieldChanged), for: .editingChanged)
+        setupEditScreen()
     }
 
+    private func setupEditScreen() {
+        if currentPlace != nil {
+            setupNavigationBar()
+            imageIsChanged = true
+            guard let data = currentPlace?.imageData, let image = UIImage(data: data) else { return }
+            placeNameTextField.text = currentPlace?.name
+            placeLocationTextField.text = currentPlace?.location
+            placeTypeTextField.text = currentPlace?.type
+            placeImage.image = image
+            placeImage.contentMode = .scaleAspectFill
+        }
+    }
+    
+    private func setupNavigationBar() {
+        if let topItem = navigationController?.navigationBar.topItem {
+            topItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        }
+        navigationItem.leftBarButtonItem = nil
+        title = currentPlace?.name
+        saveButton.isEnabled = true
+    }
     
     // MARK: - UItableViewDelegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -58,7 +81,7 @@ class NewPlaceViewController: UITableViewController {
         }
     }
     
-    func saveNewPlace() {
+    func savePlace() {
         let newPlace: Place
         var image: UIImage?
         if imageIsChanged == true {
@@ -68,7 +91,17 @@ class NewPlaceViewController: UITableViewController {
         }
         let imageData = image?.pngData()
         newPlace = Place(name: placeNameTextField.text!, location: placeLocationTextField.text, type: placeTypeTextField.text, imageData: imageData)
-        StorageManager.saveObject(newPlace)
+        
+        if currentPlace != nil {
+            try! realm.write {
+                currentPlace?.name = newPlace.name
+                currentPlace?.location = newPlace.location
+                currentPlace?.type = newPlace.type
+                currentPlace?.imageData = newPlace.imageData
+            }
+        } else {
+            StorageManager.saveObject(newPlace)
+        }
     }
     
     @IBAction func cancelAction(_ sender: UIBarButtonItem) {
